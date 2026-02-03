@@ -8,8 +8,12 @@
     "scheme": "wymobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "infoPlist": {
+      "NSLocationWhenInUseUsageDescription": "wy@ a besoin de votre position pour vous montrer les bus à proximité."
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.wy-mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +23,12 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE"
+      ]
     },
     "web": {
       "output": "static",
@@ -38,11 +47,19 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "wy@ a besoin de votre position pour afficher les bus à proximité."
+        }
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": false
     }
   }
 }

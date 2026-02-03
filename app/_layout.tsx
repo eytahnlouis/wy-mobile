@@ -1,24 +1,36 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { useEffect, useState } from "react";
+import { Stack, useRouter, useSegments } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const [isReady, setIsReady] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
+  const segments = useSegments();
+  const router = useRouter();
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+  useEffect(() => {
+    checkLogin();
+  }, []);
+
+  async function checkLogin() {
+    const token = await SecureStore.getItemAsync("userToken");
+    setHasToken(!!token);
+    setIsReady(true);
+  }
+
+  useEffect(() => {
+    if (!isReady) return;
+
+    const inAuthGroup = (segments[0] as string) === "(auth)";
+
+    if (!hasToken && !inAuthGroup) {
+      // Si pas de token et pas dans login, on redirige vers login
+      router.replace("/login" as any);
+    } else if (hasToken && inAuthGroup) {
+      // Si on a un token et on est sur les pages auth, on va sur les tabs
+      router.replace("/(tabs)" as const);
+    }
+  }, [hasToken, isReady, router, segments]);
+
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
