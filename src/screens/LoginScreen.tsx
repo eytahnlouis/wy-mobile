@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useFonts } from "expo-font";
+
 import {
   StyleSheet,
   Text,
@@ -7,125 +9,170 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { login } from "../api/authService";
 
-
-const LoginScreen = ( {navigation}: any) => {
+export default function LoginScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [loaded] = useFonts({
+    KonkhmerSleokchher: require("@/assets/fonts/KonkhmerSleokchher-Regular.ttf"),
+  });
+
+  if (!loaded) {
+    return null;
+  }
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Erreur", "Veuillez remplir tous les champs.");
+      return;
+    }
+
     setLoading(true);
     try {
       await login.login({ email, password });
-      // Navigation vers l'écran principal après une connexion réussie
-      navigation.replace("Main");
-    } catch (error: any) {
-      Alert.alert("Erreur de connexion", "Veuillez vérifier vos identifiants et réessayer.", error);
+      router.replace("/(tabs)");
+    } catch {
+      Alert.alert(
+        "Erreur de connexion",
+        "Veuillez vérifier vos identifiants et réessayer.",
+      );
     } finally {
       setLoading(false);
     }
-}
+  };
 
-return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>wy@</Text>
-      <Text style={styles.subtitle}>Votre trajet en temps réel</Text>
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <View style={styles.content}>
+        <Text style={styles.logo}>wy@</Text>
+        <Text style={styles.subtitle}>Votre trajet en temps réel</Text>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Nom d'utilisateur"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Mot de passe"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Plaque ou nom d'utilisateur"
+            placeholderTextColor="#696262"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Mot de passe"
+            placeholderTextColor="#696262"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="password"
+          />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.buttonText}> → </Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/register")}>
+          <Text style={styles.footerText}>
+            Pas encore de compte ?{" "}
+            <Text style={styles.greenText}>S&apos;inscrire</Text>
+          </Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#FFF" />
-        ) : (
-          <Text style={styles.buttonText}>Se connecter</Text>
-        )}
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.footerText}>
-          Pas encore de compte ? <Text style={styles.greenText}>S inscrire</Text>
-        </Text>
-      </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#61a817",
+  },
+  content: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
     padding: 20,
   },
   logo: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: '#27AE60', // Ton vert "wy@"
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#7F8C8D',
+    color: "#7F8C8D",
     marginBottom: 40,
   },
   inputContainer: {
-    width: '100%',
+    width: "100%",
     marginBottom: 20,
+    alignItems: "center",
   },
   input: {
-    width: '100%',
+    width: "85%",
     height: 50,
-    backgroundColor: '#F2F2F2',
-    borderRadius: 8,
+    backgroundColor: "#D9D9D9",
+    borderRadius: 26,
     paddingHorizontal: 15,
-    marginBottom: 15,
-    fontSize: 16,
+    alignSelf: "center",
+    marginBottom: 50,
+    fontSize: 14,
+    color: "#696262",
+    fontFamily: "KonkhmerSleokchher",
+
+    // iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 5, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+
+    // Android
+    elevation: 4,
   },
   button: {
-    width: '100%',
+    width: "25%",
     height: 55,
-    backgroundColor: '#27AE60',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#ffffff",
+    borderRadius: 60,
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 10,
   },
+  buttonDisabled: {
+    backgroundColor: "#95D5B2",
+  },
   buttonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: "#000000",
+    fontSize: 40,
+    fontWeight: "bold",
   },
   footerText: {
     marginTop: 20,
-    color: '#34495E',
+    color: "#e0e3e7",
   },
   greenText: {
-    color: '#27AE60',
-    fontWeight: 'bold',
+    color: "#000000",
+    fontWeight: "bold",
   },
 });
-
-export default LoginScreen;

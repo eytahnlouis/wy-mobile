@@ -1,5 +1,4 @@
 import { useEffect, useRef, useCallback } from "react";
-import * as SecureStore from "expo-secure-store";
 
 interface UseTrackingOptions {
   busLineId: number | null;
@@ -41,8 +40,7 @@ const useTracking = ({ busLineId, onBusUpdate }: UseTrackingOptions) => {
   const connect = useCallback(async (): Promise<WebSocket | null> => {
     if (!busLineIdRef.current) return null;
 
-    const token = await SecureStore.getItemAsync("userToken");
-    const socketUrl = `ws://10.192.91.255:8000/ws/tracking/?token=${token}`;
+    const socketUrl = "ws://10.192.91.255:8000/ws/tracking/";
 
     ws.current = new WebSocket(socketUrl);
 

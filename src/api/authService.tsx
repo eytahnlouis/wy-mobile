@@ -1,7 +1,7 @@
 import apiClient from "./client";
 import * as SecureStore from "expo-secure-store"; 
 
-// Service d'authentification (JWT)
+//  JWT Authentication Service
 export const login = {
     register : async(userData: any) => {
         const response = await apiClient.post("/auth/register", userData);
