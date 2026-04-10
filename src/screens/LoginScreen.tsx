@@ -37,7 +37,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await login.login({ email, password });
-      router.replace("/(tabs)");
+      router.replace("/homepage");
     } catch {
       Alert.alert(
         "Erreur de connexion",
@@ -105,7 +105,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#61a817",
+    backgroundColor: "#46A53A",
   },
   content: {
     flex: 1,

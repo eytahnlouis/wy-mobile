@@ -21,7 +21,7 @@ export const DriverControls = ({
         onPress={() => setIsTracking(!isTracking)}
       >
         <Text style={styles.buttonText}>
-          {isTracking ? "Arrêter le trajet" : "Démarrer le trajet"}
+          {isTracking ? "Stop" : "Start"} Tracking
         </Text>
       </TouchableOpacity>
 

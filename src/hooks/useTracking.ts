@@ -13,7 +13,7 @@ export interface BusUpdateMessage {
 }
 
 const useTracking = ({ busLineId, onBusUpdate }: UseTrackingOptions) => {
-  const ws = useRef<WebSocket | null>(null);
+  const ws = useRef<InstanceType<typeof globalThis.WebSocket> | null>(null);
   const retryCount = useRef(0);
   const heartbeatInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const busLineIdRef = useRef(busLineId);
@@ -31,30 +31,32 @@ const useTracking = ({ busLineId, onBusUpdate }: UseTrackingOptions) => {
   const startHeartBeat = useCallback(() => {
     stopHeartBeat();
     heartbeatInterval.current = setInterval(() => {
-      if (ws.current?.readyState === WebSocket.OPEN) {
+      if (ws.current?.readyState === globalThis.WebSocket.OPEN) {
         ws.current.send(JSON.stringify({ type: "ping" }));
       }
     }, 10000);
   }, [stopHeartBeat]);
 
-  const connect = useCallback(async (): Promise<WebSocket | null> => {
+  const connect = useCallback(async (): Promise<InstanceType<
+    typeof globalThis.WebSocket
+  > | null> => {
     if (!busLineIdRef.current) return null;
 
     const socketUrl = "ws://10.192.91.255:8000/ws/tracking/";
+    const socket = new globalThis.WebSocket(socketUrl);
+    ws.current = socket;
 
-    ws.current = new WebSocket(socketUrl);
-
-    ws.current.onopen = () => {
-      if (!ws.current) return;
-      const initMessage = {
-        type: "init",
-        bus_line_id: busLineIdRef.current,
-      };
-      ws.current.send(JSON.stringify(initMessage));
+    socket.onopen = () => {
+      socket.send(
+        JSON.stringify({
+          type: "init",
+          bus_line_id: busLineIdRef.current,
+        }),
+      );
       retryCount.current = 0;
       startHeartBeat();
     };
-    ws.current.onmessage = (event) => {
+    socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type !== "pong" && onBusUpdate) {
@@ -65,13 +67,13 @@ const useTracking = ({ busLineId, onBusUpdate }: UseTrackingOptions) => {
       }
     };
 
-    ws.current.onerror = (e) => {
-      console.log("Erreur WebSocket:", e);
-      ws.current?.close();
+    socket.onerror = (e) => {
+      console.error("WebSocket error:", e);
+      socket.close();
     };
 
-    ws.current.onclose = () => {
-      console.log("WebSocket closed, attempting reconnect...");
+    socket.onclose = () => {
+      console.warn("WebSocket closed, attempting reconnect...");
       ws.current = null;
       stopHeartBeat();
       if (retryCount.current < MAX_RETRIES) {
@@ -79,11 +81,11 @@ const useTracking = ({ busLineId, onBusUpdate }: UseTrackingOptions) => {
         retryCount.current++;
         setTimeout(connect, delay);
       } else {
-        console.log("Max retries reached");
+        console.error("WebSocket reconnect failed: max retries reached");
       }
     };
 
-    return ws.current;
+    return socket;
   }, [onBusUpdate, startHeartBeat, stopHeartBeat]);
 
   useEffect(() => {
@@ -101,7 +103,7 @@ const useTracking = ({ busLineId, onBusUpdate }: UseTrackingOptions) => {
     longitude: number,
     isFull: boolean,
   ) => {
-    if (ws.current?.readyState === WebSocket.OPEN) {
+    if (ws.current?.readyState === globalThis.WebSocket.OPEN) {
       ws.current.send(
         JSON.stringify({
           type: "position",
@@ -113,7 +115,7 @@ const useTracking = ({ busLineId, onBusUpdate }: UseTrackingOptions) => {
     }
   };
 
-  const isConnected = ws.current?.readyState === WebSocket.OPEN;
+  const isConnected = ws.current?.readyState === globalThis.WebSocket.OPEN;
 
   return { sendLocation, isConnected };
 };

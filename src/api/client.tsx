@@ -1,14 +1,13 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-// Remplace par TON adresse IP locale (tape 'ipconfig' ou 'ifconfig' dans ton terminal)
 const BASE_URL = "http://127.0.0.1:8000/api";
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  // headers: {
+  //   "Content-Type": "application/json",
+  // },
 });
 
 // Intercepteur pour ajouter automatiquement le Token JWT s'il existe

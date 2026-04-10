@@ -11,23 +11,26 @@ import {
 import { login } from "../api/authService";
 import { Checkbox } from "expo-checkbox";
 import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const RegisterScreen = () => {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState("1"); // 1 pour passager, 2 pour conducteur
+  const [isDriver, setisDriver] = useState(false); // 1 pour passager, 2 pour conducteur
 
   const handleRegister = async () => {
     setLoading(true);
     try {
       await login.register({
+        username,
         email,
         password,
-        license_plate: licensePlate,
-        role: role,
+        isDriver: isDriver,
+        license_plate: isDriver === true ? licensePlate : "",
       });
       // Navigation vers l'écran principal après une connexion réussie
       router.replace("/(tabs)");
@@ -43,68 +46,81 @@ const RegisterScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>wy@</Text>
-      <Text style={styles.subtitle}>Votre trajet en temps réel</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#ccc"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
-        <Text>
-          Êtes-vous conducteur ? Si oui, veuillez entrer votre plaque
-          d&apos;immatriculation. Sinon, laissez ce champ vide.
-        </Text>
-        <Checkbox
-          value={role === "2"}
-          onValueChange={(newValue) => setRole(newValue ? "2" : "1")}
-          color={role === "2" ? "#27AE60" : undefined}
-        />
-        {role === "2" && (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Text style={styles.logo}>wy@</Text>
+        <Text style={styles.subtitle}>Votre trajet en temps réel</Text>
+        <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Plaque d'immatriculation"
+            placeholder="Nom d'utilisateur"
             placeholderTextColor="#ccc"
-            value={licensePlate}
-            onChangeText={setLicensePlate}
+            value={username}
+            onChangeText={setUsername}
           />
-        )}
-        <TextInput
-          style={styles.input}
-          placeholder="Mot de passe"
-          placeholderTextColor="#ccc"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#ccc"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+          <Text>
+            Êtes-vous conducteur ? Si oui, veuillez entrer votre plaque
+            d&apos;immatriculation. Sinon, laissez ce champ vide.
+          </Text>
+          <Checkbox
+            value={isDriver === false}
+            onValueChange={(newValue) => setisDriver(newValue ? true : false)}
+            color={isDriver === true ? "#27AE60" : undefined}
+          />
+          {isDriver === true && (
+            <TextInput
+              style={styles.input}
+              placeholder="Plaque d'immatriculation"
+              placeholderTextColor="#ccc"
+              value={licensePlate}
+              onChangeText={setLicensePlate}
+            />
+          )}
+          <TextInput
+            style={styles.input}
+            placeholder="Mot de passe"
+            placeholderTextColor="#ccc"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+        </View>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleRegister}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>S&apos;inscrire</Text>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push("/login")}>
+          <Text style={styles.footerText}>
+            Vous avez déjà un compte ?{" "}
+            <Text style={styles.greenText}>Se connecter</Text>
+          </Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleRegister}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>S&apos;inscrire</Text>
-        )}
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/login")}>
-        <Text style={styles.footerText}>
-          Vous avez déjà un compte ?{" "}
-          <Text style={styles.greenText}>Se connecter</Text>
-        </Text>
-      </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#3DA532",
+  },
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
