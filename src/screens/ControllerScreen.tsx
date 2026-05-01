@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { login } from "../api/authService"; 
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 export default function ControllerScreen({ onClose }: { onClose: () => void }) {
+
+  const handleLogout = async () => {  
+    await login.logout();
+    onClose();
+  };
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -30,8 +35,25 @@ export default function ControllerScreen({ onClose }: { onClose: () => void }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Controller Screen</Text>
+
       <TouchableOpacity style={styles.button} onPress={onClose}>
         <Text style={styles.buttonText}>Close</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity>
+        <Text style={styles.buttonText}>Mon Compte</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity>
+        <Text style={styles.buttonText}>Paramètres</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity>
+        <Text style={styles.buttonText}>Support</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleLogout}>
+        <Text style={styles.buttonText}>Déconnexion</Text>
       </TouchableOpacity>
     </View>
   );
