@@ -1,7 +1,8 @@
 import { login } from "../api/authService"; 
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 export default function ControllerScreen({ onClose }: { onClose: () => void }) {
-
+  const router = useRouter();
   const handleLogout = async () => {  
     await login.logout();
     onClose();
@@ -54,6 +55,10 @@ export default function ControllerScreen({ onClose }: { onClose: () => void }) {
 
       <TouchableOpacity onPress={handleLogout}>
         <Text style={styles.buttonText}>Déconnexion</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => {router.replace("/DriverScreen" as never)}}>
+        <Text style={styles.buttonText}>Mode Conducteur</Text>
       </TouchableOpacity>
     </View>
   );
