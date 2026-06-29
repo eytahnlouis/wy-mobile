@@ -94,8 +94,18 @@ export default function HomeScreen() {
     },
     HamburgerButton: {
       position: "absolute",
-      top: 100,
-      right: 40,
+      top: 120,
+      left: 40,
+      zIndex: 1,
+    },
+
+    ControllerScreen: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 2,
     },
   });
   return (
@@ -109,10 +119,11 @@ export default function HomeScreen() {
       showsUserLocation
     >
       <View style={styles.HamburgerButton}>
-        <HamburgerButton onPress={() => setIsOpen(true)} />
-      </View>
-      {isOpen && (<ControllerScreen onClose={() => setIsOpen(false)} />
+        <HamburgerButton onPress={() => setIsOpen(!isOpen)} />
+          {isOpen && (<ControllerScreen onClose={() => setIsOpen(!isOpen)} />
         )}
+      </View>
+
       <View style={{ flex: 1, backgroundColor: "transparent" }}>
         <View style={styles.card}>
           <BusCard

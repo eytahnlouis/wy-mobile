@@ -42,7 +42,7 @@ const useTracking = ({ busLineId, onBusUpdate }: UseTrackingOptions) => {
   > | null> => {
     if (!busLineIdRef.current) return null;
 
-    const socketUrl = "ws://10.192.91.255:8000/ws/tracking/";
+    const socketUrl = process.env.EXPO_PUBLIC_TRACKING_API_URL + `?bus_line_id=${busLineIdRef.current}`;
     const socket = new globalThis.WebSocket(socketUrl);
     ws.current = socket;
 

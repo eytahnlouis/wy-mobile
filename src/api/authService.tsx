@@ -42,4 +42,17 @@ export const login = {
     await SecureStore.deleteItemAsync("userToken");
     await SecureStore.deleteItemAsync("refreshToken");
   },
+
+  getCurrentUser: async () => {
+    const token = await SecureStore.getItemAsync("userToken");
+    if (!token) return null;
+
+    try {
+      const response = await apiClient.get("/auth/user/");
+      return response.data;
+    } catch (error) {
+      console.warn("Failed to fetch user info:", error);
+      return null;
+    }
+  },
 };

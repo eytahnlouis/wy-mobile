@@ -19,6 +19,9 @@ export default function DriverScreen() {
     KonkhmerSleokchher: require("@/assets/fonts/KonkhmerSleokchher-Regular.ttf"),
   });
   const [isOpen, setIsOpen] = useState(false);
+  const [isFull, setIsFull] = useState(false);
+  const [isTracking, setIsTracking] = useState(true);
+  const [busLineId, setBusLineId] = useState(1); // ID de la ligne de bus, à récupérer dynamiquement
 
   const { location } = useLocation();
   const mapRef = useRef<MapView>(null);
@@ -64,6 +67,13 @@ export default function DriverScreen() {
       paddingTop: 14,
       alignItems: "flex-start",
     },
+        HamburgerButton: {
+          position: "absolute",
+          top: 120,
+          left: 40,
+          zIndex: 1,
+        },
+    
   });
   return (
     <MapView
@@ -76,11 +86,19 @@ export default function DriverScreen() {
       showsUserLocation
     >
 
-    <DriverControls isTracking={false} setIsTracking={function (val: boolean): void {
-              throw new Error("Function not implemented.");
-          } } isFull={false} setIsFull={function (val: boolean): void {
-              throw new Error("Function not implemented.");
-          } } />
+      <View style={styles.HamburgerButton}>
+        <HamburgerButton onPress={() => setIsOpen(!isOpen)} />
+          {isOpen && (<ControllerScreen onClose={() => setIsOpen(!isOpen)} />
+        )}
+      </View>
+      <StatusBar style="light" />
+      <DriverControls
+        isFull={isFull}
+        setIsFull={setIsFull}
+        isTracking={isTracking}
+        setIsTracking={setIsTracking}
+        busLineId={busLineId}
+      />
     </MapView>
   );
 }

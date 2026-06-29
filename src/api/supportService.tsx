@@ -1,17 +1,17 @@
 import apiClient from "./client";
 
 type SupportServiceProps = {
-  title: string;
+  subject: string;
   description: string;
 };
 
 export const supportService = {
   submitIssue: async ({
-    title,
+    subject,
     description,
   }: SupportServiceProps) => {
-    const response = await apiClient.post("api/support/create-ticket/", {
-      title,
+    const response = await apiClient.post("support/create-ticket/", {
+      subject,
       description,
     });
     return response.data;

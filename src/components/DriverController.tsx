@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
+import useTracking from "../hooks/useTracking";
 
 interface DriverControlsProps {
   isTracking: boolean;
   setIsTracking: (val: boolean) => void;
   isFull: boolean;
   setIsFull: (val: boolean) => void;
+  busLineId: number;
 }
 
 export const DriverControls = ({
@@ -13,8 +15,27 @@ export const DriverControls = ({
   setIsTracking,
   isFull,
   setIsFull,
+  busLineId,
 }: DriverControlsProps) => {
+const { sendLocation, isConnected } = useTracking({
+    busLineId,
+    onBusUpdate: (msg) => console.log("bus update:", msg),
+  });
+
+  useEffect(() => {
+    if (!isTracking) return;
+    const watchId = navigator.geolocation.watchPosition(
+      ({ coords }) => {
+        sendLocation(coords.latitude, coords.longitude, isFull);
+      },
+      (err) => console.warn(err),
+      ({ enableHighAccuracy: true, distanceFilter: 10 } as any),
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [isTracking, isFull, sendLocation]);
+
   return (
+    
     <View style={styles.controls}>
       <TouchableOpacity
         style={[styles.button, isTracking ? styles.stopBtn : styles.startBtn]}
