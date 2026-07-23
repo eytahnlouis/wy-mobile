@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import useTracking from "../hooks/useTracking";
+import * as Location from "expo-location";
 
 interface DriverControlsProps {
   isTracking: boolean;
@@ -17,25 +18,50 @@ export const DriverControls = ({
   setIsFull,
   busLineId,
 }: DriverControlsProps) => {
-const { sendLocation, isConnected } = useTracking({
+  const { sendLocation, isConnected } = useTracking({
     busLineId,
     onBusUpdate: (msg) => console.log("bus update:", msg),
   });
 
   useEffect(() => {
     if (!isTracking) return;
-    const watchId = navigator.geolocation.watchPosition(
-      ({ coords }) => {
-        sendLocation(coords.latitude, coords.longitude, isFull);
-      },
-      (err) => console.warn(err),
-      ({ enableHighAccuracy: true, distanceFilter: 10 } as any),
-    );
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, [isTracking, isFull, sendLocation]);
+
+    let subscription: Location.LocationSubscription | null = null;
+
+    const startTracking = async () => {
+      // 1. Demande de permission
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.warn("Permission de géolocalisation refusée");
+        setIsTracking(false);
+        return;
+      }
+
+      // 2. Démarrage du tracking avec Expo
+      subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          distanceInterval: 10, // Remplace distanceFilter (en mètres)
+          timeInterval: 3000,   // Fréquence min de maj (en ms)
+        },
+        (location) => {
+          const { latitude, longitude } = location.coords;
+          sendLocation(latitude, longitude, isFull);
+        }
+      );
+    };
+
+    startTracking().catch((err) => console.warn(err));
+
+    // 3. Nettoyage lors du démontage ou quand isTracking passe à false
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, [isTracking, isFull, sendLocation, setIsTracking]);
 
   return (
-    
     <View style={styles.controls}>
       <TouchableOpacity
         style={[styles.button, isTracking ? styles.stopBtn : styles.startBtn]}
