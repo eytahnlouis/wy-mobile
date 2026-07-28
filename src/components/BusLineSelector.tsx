@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {View, Text, StyleSheet, TouchableOpacity, FlatList, Modal} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 interface BusLine {
     id: number;
@@ -17,18 +19,53 @@ export const BusLineSelector = ({selectedLineId, onSelect}: BusLineSelectorProps
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const CACHE_KEY = "buslines_cache";
+    const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h, cohérent avec le cache backend
 
     useEffect(() => {
         const fetchLines = async () => {
+            setLoading(true);
+            setError(null);
+
+            let cachedEntry: { data: BusLine[]; timestamp: number } | null = null;
+
+            // 1. Lecture du cache local
             try {
-                setLoading(true);
+                const cached = await AsyncStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    cachedEntry = JSON.parse(cached);
+                    if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
+                        setLines(cachedEntry.data);
+                        setLoading(false);
+                        return; // cache valide, pas de fetch réseau
+                    }
+                }
+            } catch (err) {
+                console.warn("Cache read failed:", err);
+                cachedEntry = null;
+            }
+
+            // 2. Cache absent/expiré → fetch réseau
+            try {
                 const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/gtfs/buslines/`);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json();
                 setLines(data);
+
+                await AsyncStorage.setItem(
+                    CACHE_KEY,
+                    JSON.stringify({data, timestamp: Date.now()})
+                );
             } catch (err) {
                 console.error("Failed to fetch bus lines:", err);
-                setError("Impossible de charger les lignes");
+
+                // 3. Fallback : cache expiré vaut mieux que rien
+                if (cachedEntry) {
+                    setLines(cachedEntry.data);
+                    setError("Liste peut-être obsolète (hors ligne)");
+                } else {
+                    setError("Impossible de charger les lignes");
+                }
             } finally {
                 setLoading(false);
             }
