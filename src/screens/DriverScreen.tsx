@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect} from "react";
 import {useFonts} from "expo-font";
-import MapView from "react-native-maps";
+import MapView, {Marker} from "react-native-maps";
 import {StyleSheet, View, TouchableOpacity} from "react-native";
 import {useLocation} from "../hooks/useLocation";
 import {router, useRouter} from "expo-router";
@@ -10,6 +10,7 @@ import useTracking from "../hooks/useTracking";
 import {DriverControls} from "../components/DriverController";
 import ControllerScreen from "./ControllerScreen";
 import {BusLineSelector} from "../components/BusLineSelector";
+import {useBusStops} from "@/src/hooks/useBusStops";
 
 export default function DriverScreen() {
     const route = useRouter();
@@ -25,6 +26,8 @@ export default function DriverScreen() {
 
     const {location} = useLocation();
     const mapRef = useRef<MapView>(null);
+
+    const {stops} = useBusStops(busLineId);
     useEffect(() => {
         if (location && mapRef.current) {
             mapRef.current.animateToRegion(
@@ -82,6 +85,7 @@ export default function DriverScreen() {
         },
 
     });
+    // @ts-ignore
     return (
         <MapView
             ref={mapRef}
@@ -93,7 +97,20 @@ export default function DriverScreen() {
             showsUserLocation
             showsMyLocationButton
             followsUserLocation
+
+
         >
+            {stops.map((lineStop) => (
+                <Marker
+                    key={lineStop.id}
+                    coordinate={{
+                        latitude: lineStop.stop.lat,
+                        longitude: lineStop.stop.lon,
+                    }}
+                    title={lineStop.stop.name}
+                    pinColor="#3498DB"
+                />
+            ))}
             <View style={styles.lineSelector}>
                 {!isTracking && (<BusLineSelector
                     selectedLineId={busLineId}
