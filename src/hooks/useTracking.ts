@@ -2,7 +2,7 @@ import {useEffect, useRef, useCallback, useState} from "react";
 import * as SecureStore from "expo-secure-store";
 
 interface UseTrackingOptions {
-    busLineId: number | null;
+    busLineId: string | null;
     authToken?: string;
     onBusUpdate?: (data: BusUpdateMessage) => void;
 }
